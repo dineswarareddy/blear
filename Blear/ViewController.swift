@@ -278,20 +278,20 @@ final class ViewController: UIViewController {
 			self.updateImage()
 		}
 	}
-
+	
 	@objc
 	func saveImage(_ button: UIBarButtonItem) {
 		button.isEnabled = false
-
+		
 		PHPhotoLibrary.save(image: imageView.image!, toAlbum: "Blear") { result in
 			button.isEnabled = true
-
+			
 			let HUD = JGProgressHUD(style: .dark)
 			HUD.indicatorView = JGProgressHUDSuccessIndicatorView()
 			HUD.animation = JGProgressHUDFadeZoomAnimation()
 			HUD.vibrancyEnabled = true
 			HUD.contentInsets = UIEdgeInsets(all: 30)
-
+			
 			if case .failure(let error) = result {
 				HUD.indicatorView = JGProgressHUDErrorIndicatorView()
 				HUD.textLabel.text = error.localizedDescription
@@ -299,11 +299,11 @@ final class ViewController: UIViewController {
 				HUD.dismiss(afterDelay: 3)
 				return
 			}
-
+			
 			//HUD.indicatorView = JGProgressHUDImageIndicatorView(image: #imageLiteral(resourceName: "HudSaved"))
 			HUD.show(in: self.view)
 			HUD.dismiss(afterDelay: 0.8)
-
+			
 			// Only on first save
 			if UserDefaults.standard.isFirstLaunch {
 				delay(seconds: 1) {
@@ -318,15 +318,15 @@ final class ViewController: UIViewController {
 			}
 		}
 	}
-
+	
 	/// TODO: Improve this method
 	func changeImage(_ image: UIImage) {
 		let tmp = NSKeyedUnarchiver.unarchiveObject(with: NSKeyedArchiver.archivedData(withRootObject: imageView)) as! UIImageView
 		view.insertSubview(tmp, aboveSubview: imageView)
 		imageView.image = image
+		originalImage = image
 		sourceImage = imageView.toImage()
 		updateImageDebounced()
-
 		// The delay here is important so it has time to blur the image before we start fading
 		UIView.animate(
 			withDuration: 0.6,
@@ -334,13 +334,29 @@ final class ViewController: UIViewController {
 			options: .curveEaseInOut,
 			animations: {
 				tmp.alpha = 0
-			}, completion: { _ in
-				tmp.removeFromSuperview()
-			}
-		)
+		}, completion: { _ in
+			tmp.removeFromSuperview()
+		})
 	}
-
+	
 	func randomImage() {
 		changeImage(UIImage(contentsOf: randomImageIterator.next()!)!)
+	}
+}
+
+extension ViewController: UIScrollViewDelegate {
+	func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+		return imageView
+	}
+	
+	func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+		UIView.animate(withDuration: 0.3, animations: { [weak self] in
+			scrollView.zoomScale = Constants.scrollMinimumScale
+			self?.effectTitleLabel.isHidden = false
+		})
+	}
+	
+	func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+		effectTitleLabel.isHidden = true
 	}
 }
