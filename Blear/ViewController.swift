@@ -394,10 +394,11 @@ final class ViewController: UIViewController {
 	}
 
 	func randomImage() {
-		changeImage(UIImage(contentsOf: randomImageIterator.next()!)!)
-		filterImagePreviewCollectionView.reloadData()
 		blurAmount = Constants.minimumBlurValue
 		slider.value = Constants.minimumBlurValue
+		blurAmount = Constants.minimumBlurValue
+		changeImage(UIImage(contentsOf: randomImageIterator.next()!)!)
+		filterImagePreviewCollectionView.reloadData()
 		effectTitleLabel.text = Constants.originalImage
 	}
 
