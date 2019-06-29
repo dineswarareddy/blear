@@ -16,6 +16,7 @@ struct Constants {
 	static let minimumBlurValue: Float = 0
 	static let maximumBlurValue: Float = 100
 	static let originalImage = "Original Image"
+	static let reuseIdentifier = "FilterImagePreviewCell"
 	static var CIFilterNames = [
 		"CIPhotoEffectChrome",
 		"CIPhotoEffectFade",
@@ -26,6 +27,9 @@ struct Constants {
 		"CIPhotoEffectTransfer",
 		"CISepiaTone"
 	]
+	static let collectionItemWidth: CGFloat = 100
+	static let collectionItemHeight: CGFloat = 120
+	static let animationDuration = 0.3
 }
 
 final class ViewController: UIViewController {
@@ -62,6 +66,22 @@ final class ViewController: UIViewController {
 		$0.minimumZoomScale = Constants.scrollMinimumScale
 		$0.maximumZoomScale = Constants.scrollMaximumScale
 		$0.delegate = self
+	}
+
+	lazy var layout = with(UICollectionViewFlowLayout()) {
+		$0.scrollDirection = .vertical
+		$0.sectionInset = UIEdgeInsets(top: 15, left: 5, bottom: 15, right: 5)
+		$0.itemSize = CGSize(width: Constants.collectionItemWidth, height: Constants.collectionItemHeight)
+	}
+
+	lazy var filterImagePreviewCollectionView = with(UICollectionView(frame: CGRect(x: -150, y: 60, width: Constants.collectionItemWidth, height: self.view.bounds.height - 150), collectionViewLayout: layout)) {
+		$0.register(FilterImagePreviewCell.self, forCellWithReuseIdentifier: Constants.reuseIdentifier)
+		$0.dataSource = self
+		$0.delegate = self
+		$0.showsHorizontalScrollIndicator = false
+		$0.showsVerticalScrollIndicator = true
+		$0.backgroundColor = .clear
+		$0.isHidden = true
 	}
 
 	lazy var slider = with(UISlider()) {
@@ -341,6 +361,26 @@ final class ViewController: UIViewController {
 
 	func randomImage() {
 		changeImage(UIImage(contentsOf: randomImageIterator.next()!)!)
+		filterImagePreviewCollectionView.reloadData()
+		blurAmount = Constants.minimumBlurValue
+		slider.value = Constants.minimumBlurValue
+		effectTitleLabel.text = Constants.originalImage
+	}
+
+	func displayPreviewCollectionView() {
+		isPreviewCollectionViewHidden = false
+		UIView.animate(withDuration: Constants.animationDuration) { [weak self] in
+			self?.filterImagePreviewCollectionView.frame = CGRect(x: 10, y: 60, width: Constants.collectionItemWidth, height: self?.filterImagePreviewCollectionView.frame.size.height ?? 0)
+			self?.filterImagePreviewCollectionView.isHidden = false
+		}
+	}
+
+	func dismissPreviewCollectionView() {
+		isPreviewCollectionViewHidden = true
+		UIView.animate(withDuration: Constants.animationDuration) { [weak self] in
+			self?.filterImagePreviewCollectionView.frame = CGRect(x: -150, y: 60, width: Constants.collectionItemWidth, height: self?.filterImagePreviewCollectionView.frame.size.height ?? 0)
+				self?.filterImagePreviewCollectionView.isHidden = true
+		}
 	}
 }
 
@@ -358,5 +398,32 @@ extension ViewController: UIScrollViewDelegate {
 
 	func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
 		effectTitleLabel.isHidden = true
+	}
+}
+
+extension ViewController: UICollectionViewDelegate {
+	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+		if let previewCell = collectionView.cellForItem(at: indexPath) as? FilterImagePreviewCell {
+			imageView.image = previewCell.imageView.image
+			sourceImage = previewCell.imageView.image
+			effectTitleLabel.text = Constants.CIFilterNames[indexPath.item]
+			isPreviewCollectionViewHidden = true
+			toolbar?.isHidden = false
+			currentFilterEffectIndex = indexPath.item
+			slider.value = Constants.minimumBlurValue
+			dismissPreviewCollectionView()
+		}
+	}
+}
+
+extension ViewController: UICollectionViewDataSource {
+	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+		return Constants.CIFilterNames.count - 1
+	}
+
+	func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Constants.reuseIdentifier, for: indexPath) as! FilterImagePreviewCell
+		cell.imageView.image = getFilteredImage(filterIndex: indexPath.item)
+		return cell
 	}
 }
