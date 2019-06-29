@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7C5D377022C756F2007E1882 /* FilterImagePreviewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C5D376F22C756F2007E1882 /* FilterImagePreviewCell.swift */; };
 		B4402B6BE736FE94384151F3 /* Pods_Blear.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69A32EB0F984A04AB1CBE519 /* Pods_Blear.framework */; };
 		E33A6D501B2272B700CBEDC9 /* UIImageEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = E33A6D4F1B2272B700CBEDC9 /* UIImageEffects.m */; };
 		E3430F431B27AD5800AF3F80 /* Bundled Photos in Resources */ = {isa = PBXBuildFile; fileRef = E3430F421B27AD5800AF3F80 /* Bundled Photos */; };
@@ -22,6 +23,7 @@
 /* Begin PBXFileReference section */
 		69A32EB0F984A04AB1CBE519 /* Pods_Blear.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Blear.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6AAAF7C2359ED38C3A73F1A2 /* Pods-Blear.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Blear.release.xcconfig"; path = "Pods/Target Support Files/Pods-Blear/Pods-Blear.release.xcconfig"; sourceTree = "<group>"; };
+		7C5D376F22C756F2007E1882 /* FilterImagePreviewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterImagePreviewCell.swift; sourceTree = "<group>"; };
 		85485F4EC63A600901518312 /* Pods-Blear.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Blear.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Blear/Pods-Blear.debug.xcconfig"; sourceTree = "<group>"; };
 		E33A6D4E1B2272B700CBEDC9 /* UIImageEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UIImageEffects.h; sourceTree = "<group>"; };
 		E33A6D4F1B2272B700CBEDC9 /* UIImageEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UIImageEffects.m; sourceTree = "<group>"; };
@@ -109,6 +111,7 @@
 			children = (
 				E3A0365917E5E7AE00892B76 /* AppDelegate.swift */,
 				E3A0367917E5E94E00892B76 /* ViewController.swift */,
+				7C5D376F22C756F2007E1882 /* FilterImagePreviewCell.swift */,
 				E3A0368E17E6214500892B76 /* util.swift */,
 				E3A0365B17E5E7AE00892B76 /* Images.xcassets */,
 				E3A0365017E5E7AE00892B76 /* Supporting Files */,
@@ -257,6 +260,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C5D377022C756F2007E1882 /* FilterImagePreviewCell.swift in Sources */,
 				E3A0367A17E5E94E00892B76 /* ViewController.swift in Sources */,
 				E3A0365A17E5E7AE00892B76 /* AppDelegate.swift in Sources */,
 				E33A6D501B2272B700CBEDC9 /* UIImageEffects.m in Sources */,
