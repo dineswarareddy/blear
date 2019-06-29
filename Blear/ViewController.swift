@@ -239,6 +239,13 @@ final class ViewController: UIViewController {
 		imageView.addGestureRecognizer(longTapGesture)
 	}
 
+	func addDoubleTapToImageView() {
+		let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(doubleTapGestured))
+		doubleTapGesture.numberOfTapsRequired = 2
+		doubleTapGesture.numberOfTouchesRequired = 1
+		imageView.addGestureRecognizer(doubleTapGesture)
+	}
+
 	func addRightSwipeGestureRecognizer() {
 		let rightSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipActionRecognized))
 		rightSwipeGesture.direction = .right
@@ -249,6 +256,22 @@ final class ViewController: UIViewController {
 		let leftSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipActionRecognized))
 		leftSwipeGesture.direction = .left
 		bottomScrollView.addGestureRecognizer(leftSwipeGesture)
+	}
+
+	func setupFilterImagePreviewCollectionView() {
+		bottomScrollView.addSubview(filterImagePreviewCollectionView)
+		filterImagePreviewCollectionView.alwaysBounceVertical = true
+	}
+
+	@objc
+	func doubleTapGestured() {
+		if !isPreviewCollectionViewHidden {
+			dismissPreviewCollectionView()
+			toolbar?.isHidden = false
+		} else {
+			displayPreviewCollectionView()
+			toolbar?.isHidden = true
+		}
 	}
 
 	@objc
