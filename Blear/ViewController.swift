@@ -130,7 +130,7 @@ final class ViewController: UIViewController {
 			UIColor.black.withAlphaComponent(0.4).cgColor
 		]
 		toolbar.layer.addSublayer(gradient)
-
+		
 		toolbar.items = [
 			UIBarButtonItem(image: UIImage(named: "PickButton")!, target: self, action: #selector(pickImage), width: 20),
 			.flexibleSpace,
@@ -139,11 +139,34 @@ final class ViewController: UIViewController {
 			UIBarButtonItem(image: UIImage(named: "SaveButton")!, target: self, action: #selector(saveImage), width: 20)
 		]
 		view.addSubview(toolbar)
-
+		
 		// Important that this is here at the end for the fading to work
 		randomImage()
+		addRequiredGestures()
 	}
-
+	
+	func addRequiredGestures() {
+		addLongPressGestureToImageView()
+		addRightSwipeGestureRecognizer()
+		addLeftSwipeGestureRecognizer()
+	}
+	
+	func addFiltertoImageView(filterIndex: Int) {
+		let ciContext = CIContext(options: nil)
+		if let originalImage = originalImage {
+			let coreImage = CIImage(image: originalImage)
+			let filter = CIFilter(name: "\(Constants.CIFilterNames[filterIndex])" )
+			effectTitleLabel.text = Constants.CIFilterNames[filterIndex]
+			filter!.setDefaults()
+			filter!.setValue(coreImage, forKey: kCIInputImageKey)
+			let filteredImageData = filter!.value(forKey: kCIOutputImageKey) as! CIImage
+			let filteredImageRef = ciContext.createCGImage(filteredImageData, from: filteredImageData.extent)
+			let filteredImage = UIImage(cgImage: filteredImageRef!)
+			imageView.image = filteredImage
+			sourceImage = filteredImage
+		}
+	}
+	
 	@objc
 	func pickImage() {
 		let fdTake = FDTakeController()
@@ -153,7 +176,7 @@ final class ViewController: UIViewController {
 		}
 		fdTake.present()
 	}
-
+	
 	func blurImage(_ blurAmount: Float) -> UIImage {
 		return UIImageEffects.imageByApplyingBlur(
 			to: sourceImage,
@@ -163,7 +186,7 @@ final class ViewController: UIViewController {
 			maskImage: nil
 		)
 	}
-
+	
 	@objc
 	func updateImage() {
 		DispatchQueue.global(qos: .userInteractive).async {
@@ -173,11 +196,80 @@ final class ViewController: UIViewController {
 			}
 		}
 	}
-
+	
 	func updateImageDebounced() {
 		performSelector(inBackground: #selector(updateImage), with: IS_IPAD ? 0.1 : 0.06)
 	}
-
+	
+	func addLongPressGestureToImageView() {
+		let longTapGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPressActionPerformed))
+		imageView.addGestureRecognizer(longTapGesture)
+	}
+	
+	func addRightSwipeGestureRecognizer() {
+		let rightSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipActionRecognized))
+		rightSwipeGesture.direction = .right
+		bottomScrollView.addGestureRecognizer(rightSwipeGesture)
+	}
+	
+	func addLeftSwipeGestureRecognizer() {
+		let leftSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipActionRecognized))
+		leftSwipeGesture.direction = .left
+		bottomScrollView.addGestureRecognizer(leftSwipeGesture)
+	}
+	
+	@objc
+	func swipActionRecognized(gesture: UISwipeGestureRecognizer) {
+		if gesture.direction == .left {
+			if filterApplied == false {
+				filterApplied = true
+			} else {
+				currentFilterEffectIndex += 1
+				if currentFilterEffectIndex >= Constants.CIFilterNames.count {
+					resetSwipe()
+					return
+				}
+			}
+			addFiltertoImageView(filterIndex: currentFilterEffectIndex)
+		} else if gesture.direction == .right {
+			if filterApplied == false {
+				return
+			}
+			currentFilterEffectIndex -= 1
+			if currentFilterEffectIndex == -1 {
+				resetSwipe()
+				return
+			}
+			addFiltertoImageView(filterIndex: currentFilterEffectIndex)
+		}
+	}
+	
+	func resetSwipe() {
+		filterApplied = false
+		currentFilterEffectIndex = 0
+		imageView.image = originalImage
+		sourceImage = originalImage
+		effectTitleLabel.text = Constants.originalImage
+	}
+	
+	@objc
+	func longPressActionPerformed(sender: UILongPressGestureRecognizer) {
+		if sender.state == .began {
+			if let imageToShare = imageView.image {
+				performImageShareAction(shareImage: imageToShare)
+			}
+		}
+	}
+	
+	func performImageShareAction(shareImage: UIImage) {
+		let itemsToShare = [shareImage]
+		let activityController = UIActivityViewController(activityItems: itemsToShare, applicationActivities: nil)
+		activityController.modalTransitionStyle = .coverVertical
+		self.present(activityController, animated: true) {
+			//TODO: Implemet any share completion action here.
+		}
+	}
+	
 	@objc
 	func sliderChanged(_ sender: UISlider) {
 		blurAmount = sender.value
