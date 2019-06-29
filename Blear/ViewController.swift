@@ -185,6 +185,19 @@ final class ViewController: UIViewController {
 			imageView.image = filteredImage
 			sourceImage = filteredImage
 		}
+		slider.value = Constants.minimumBlurValue
+	}
+
+	func getFilteredImage(filterIndex: Int) -> UIImage {
+		let ciContext = CIContext(options: nil)
+		let coreImage = CIImage(image: originalImage!)
+		let filter = CIFilter(name: "\(Constants.CIFilterNames[filterIndex])" )
+		filter!.setDefaults()
+		filter!.setValue(coreImage, forKey: kCIInputImageKey)
+		let filteredImageData = filter!.value(forKey: kCIOutputImageKey) as! CIImage
+		let filteredImageRef = ciContext.createCGImage(filteredImageData, from: filteredImageData.extent)
+		let filteredImage = UIImage(cgImage: filteredImageRef!)
+		return filteredImage
 	}
 
 	@objc
