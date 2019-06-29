@@ -178,19 +178,10 @@ final class ViewController: UIViewController {
 	}
 
 	func addFiltertoImageView(filterIndex: Int) {
-		let ciContext = CIContext(options: nil)
-		if let originalImage = originalImage {
-			let coreImage = CIImage(image: originalImage)
-			let filter = CIFilter(name: "\(Constants.CIFilterNames[filterIndex])" )
-			effectTitleLabel.text = Constants.CIFilterNames[filterIndex]
-			filter!.setDefaults()
-			filter!.setValue(coreImage, forKey: kCIInputImageKey)
-			let filteredImageData = filter!.value(forKey: kCIOutputImageKey) as! CIImage
-			let filteredImageRef = ciContext.createCGImage(filteredImageData, from: filteredImageData.extent)
-			let filteredImage = UIImage(cgImage: filteredImageRef!)
-			imageView.image = filteredImage
-			sourceImage = filteredImage
-		}
+		let filteredImage = getFilteredImage(filterIndex: filterIndex)
+		imageView.image = filteredImage
+		sourceImage = filteredImage
+		effectTitleLabel.text = Constants.CIFilterNames[filterIndex]
 		slider.value = Constants.minimumBlurValue
 	}
 
@@ -312,6 +303,7 @@ final class ViewController: UIViewController {
 		imageView.image = originalImage
 		sourceImage = originalImage
 		effectTitleLabel.text = Constants.originalImage
+		slider.value = Constants.minimumBlurValue
 	}
 
 	@objc
