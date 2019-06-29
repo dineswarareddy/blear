@@ -10,25 +10,65 @@ let SCREEN_WIDTH = UIScreen.main.bounds.size.width
 let SCREEN_HEIGHT = UIScreen.main.bounds.size.height
 let IS_LARGE_SCREEN = IS_IPHONE && max(SCREEN_WIDTH, SCREEN_HEIGHT) >= 736.0
 
+struct Constants {
+	static let scrollMinimumScale: CGFloat = 1.0
+	static let scrollMaximumScale: CGFloat = 10.0
+	static let minimumBlurValue: Float = 0
+	static let maximumBlurValue: Float = 100
+	static let originalImage = "Original Image"
+	static var CIFilterNames = [
+		"CIPhotoEffectChrome",
+		"CIPhotoEffectFade",
+		"CIPhotoEffectInstant",
+		"CIPhotoEffectNoir",
+		"CIPhotoEffectProcess",
+		"CIPhotoEffectTonal",
+		"CIPhotoEffectTransfer",
+		"CISepiaTone"
+	]
+}
+
 final class ViewController: UIViewController {
 	var sourceImage: UIImage?
 	var delayedAction: IIDelayedAction?
-	var blurAmount: Float = 50
+	var blurAmount: Float = Constants.minimumBlurValue
 	let stockImages = Bundle.main.urls(forResourcesWithExtension: "jpg", subdirectory: "Bundled Photos")!
 	lazy var randomImageIterator: AnyIterator<URL> = self.stockImages.uniqueRandomElement()
-
+	var currentFilterEffectIndex = 0
+	var filterApplied = false
+	var originalImage: UIImage?
+	
 	lazy var imageView = with(UIImageView()) {
 		$0.image = UIImage(color: .black, size: view.frame.size)
 		$0.contentMode = .scaleAspectFill
 		$0.clipsToBounds = true
 		$0.frame = view.bounds
+		$0.isUserInteractionEnabled = true
 	}
-
+	
+	lazy var effectTitleLabel = with(UILabel()) {
+		$0.frame = CGRect(x: 0, y: 0, width: view.frame.size.width, height: 40)
+		$0.textAlignment = .center
+		$0.font = UIFont.boldSystemFont(ofSize: 16.0)
+		$0.textColor = UIColor(red: 225, green: 74, blue: 119, alpha: 1.0)
+		$0.text = Constants.originalImage
+	}
+	
+	// To perform pinch operation similar to Insta
+	lazy var bottomScrollView = with(UIScrollView()) {
+		$0.frame = view.frame
+		$0.alwaysBounceVertical = false
+		$0.alwaysBounceHorizontal = false
+		$0.minimumZoomScale = Constants.scrollMinimumScale
+		$0.maximumZoomScale = Constants.scrollMaximumScale
+		$0.delegate = self
+	}
+	
 	lazy var slider = with(UISlider()) {
 		let SLIDER_MARGIN: CGFloat = 120
 		$0.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - SLIDER_MARGIN, height: view.frame.size.height)
-		$0.minimumValue = 10
-		$0.maximumValue = 100
+		$0.minimumValue = Constants.minimumBlurValue
+		$0.maximumValue = Constants.maximumBlurValue
 		$0.value = blurAmount
 		$0.isContinuous = true
 		$0.setThumbImage(UIImage(named: "SliderThumb")!, for: .normal)
