@@ -81,41 +81,44 @@ final class ViewController: UIViewController {
 		]
 		$0.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
 	}
-
+	
 	override var canBecomeFirstResponder: Bool {
 		return true
 	}
-
+	
 	override var prefersStatusBarHidden: Bool {
 		return true
 	}
-
+	
 	override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
 		if motion == .motionShake {
 			randomImage()
 		}
 	}
-
+	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-
+		
 		// This is to ensure that it always ends up with the current blur amount when the slider stops
 		// since we're using `DispatchQueue.global().async` the order of events aren't serial
 		delayedAction = IIDelayedAction({}, withDelay: 0.2)
 		delayedAction?.onMainThread = false
-
-		view.addSubview(imageView)
-
+		
+		// Adding scroll view and imageview to view
+		view.addSubview(bottomScrollView)
+		bottomScrollView.addSubview(imageView)
+		view.addSubview(effectTitleLabel)
+		
 		let TOOLBAR_HEIGHT: CGFloat = 80 + window.safeAreaInsets.bottom
 		let toolbar = UIToolbar(frame: CGRect(x: 0, y: view.frame.size.height - TOOLBAR_HEIGHT, width: view.frame.size.width, height: TOOLBAR_HEIGHT))
 		toolbar.autoresizingMask = .flexibleWidth
 		toolbar.alpha = 0.6
 		toolbar.tintColor = #colorLiteral(red: 0.98, green: 0.98, blue: 0.98, alpha: 1)
-
+		
 		// Remove background
 		toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
 		toolbar.setShadowImage(UIImage(), forToolbarPosition: .any)
-
+		
 		// Gradient background
 		let GRADIENT_PADDING: CGFloat = 40
 		let gradient = CAGradientLayer()
