@@ -37,7 +37,7 @@ final class ViewController: UIViewController {
 	var currentFilterEffectIndex = 0
 	var filterApplied = false
 	var originalImage: UIImage?
-	
+
 	lazy var imageView = with(UIImageView()) {
 		$0.image = UIImage(color: .black, size: view.frame.size)
 		$0.contentMode = .scaleAspectFill
@@ -45,7 +45,7 @@ final class ViewController: UIViewController {
 		$0.frame = view.bounds
 		$0.isUserInteractionEnabled = true
 	}
-	
+
 	lazy var effectTitleLabel = with(UILabel()) {
 		$0.frame = CGRect(x: 0, y: 0, width: view.frame.size.width, height: 40)
 		$0.textAlignment = .center
@@ -53,7 +53,7 @@ final class ViewController: UIViewController {
 		$0.textColor = UIColor(red: 225, green: 74, blue: 119, alpha: 1.0)
 		$0.text = Constants.originalImage
 	}
-	
+
 	// To perform pinch operation similar to Insta
 	lazy var bottomScrollView = with(UIScrollView()) {
 		$0.frame = view.frame
@@ -63,7 +63,7 @@ final class ViewController: UIViewController {
 		$0.maximumZoomScale = Constants.scrollMaximumScale
 		$0.delegate = self
 	}
-	
+
 	lazy var slider = with(UISlider()) {
 		let SLIDER_MARGIN: CGFloat = 120
 		$0.frame = CGRect(x: 0, y: 0, width: view.frame.size.width - SLIDER_MARGIN, height: view.frame.size.height)
@@ -81,44 +81,44 @@ final class ViewController: UIViewController {
 		]
 		$0.addTarget(self, action: #selector(sliderChanged), for: .valueChanged)
 	}
-	
+
 	override var canBecomeFirstResponder: Bool {
 		return true
 	}
-	
+
 	override var prefersStatusBarHidden: Bool {
 		return true
 	}
-	
+
 	override func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
 		if motion == .motionShake {
 			randomImage()
 		}
 	}
-	
+
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		
+
 		// This is to ensure that it always ends up with the current blur amount when the slider stops
 		// since we're using `DispatchQueue.global().async` the order of events aren't serial
 		delayedAction = IIDelayedAction({}, withDelay: 0.2)
 		delayedAction?.onMainThread = false
-		
+
 		// Adding scroll view and imageview to view
 		view.addSubview(bottomScrollView)
 		bottomScrollView.addSubview(imageView)
 		view.addSubview(effectTitleLabel)
-		
+
 		let TOOLBAR_HEIGHT: CGFloat = 80 + window.safeAreaInsets.bottom
 		let toolbar = UIToolbar(frame: CGRect(x: 0, y: view.frame.size.height - TOOLBAR_HEIGHT, width: view.frame.size.width, height: TOOLBAR_HEIGHT))
 		toolbar.autoresizingMask = .flexibleWidth
 		toolbar.alpha = 0.6
 		toolbar.tintColor = #colorLiteral(red: 0.98, green: 0.98, blue: 0.98, alpha: 1)
-		
+
 		// Remove background
 		toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
 		toolbar.setShadowImage(UIImage(), forToolbarPosition: .any)
-		
+
 		// Gradient background
 		let GRADIENT_PADDING: CGFloat = 40
 		let gradient = CAGradientLayer()
@@ -130,7 +130,7 @@ final class ViewController: UIViewController {
 			UIColor.black.withAlphaComponent(0.4).cgColor
 		]
 		toolbar.layer.addSublayer(gradient)
-		
+
 		toolbar.items = [
 			UIBarButtonItem(image: UIImage(named: "PickButton")!, target: self, action: #selector(pickImage), width: 20),
 			.flexibleSpace,
@@ -139,18 +139,18 @@ final class ViewController: UIViewController {
 			UIBarButtonItem(image: UIImage(named: "SaveButton")!, target: self, action: #selector(saveImage), width: 20)
 		]
 		view.addSubview(toolbar)
-		
+
 		// Important that this is here at the end for the fading to work
 		randomImage()
 		addRequiredGestures()
 	}
-	
+
 	func addRequiredGestures() {
 		addLongPressGestureToImageView()
 		addRightSwipeGestureRecognizer()
 		addLeftSwipeGestureRecognizer()
 	}
-	
+
 	func addFiltertoImageView(filterIndex: Int) {
 		let ciContext = CIContext(options: nil)
 		if let originalImage = originalImage {
@@ -166,7 +166,7 @@ final class ViewController: UIViewController {
 			sourceImage = filteredImage
 		}
 	}
-	
+
 	@objc
 	func pickImage() {
 		let fdTake = FDTakeController()
@@ -176,7 +176,7 @@ final class ViewController: UIViewController {
 		}
 		fdTake.present()
 	}
-	
+
 	func blurImage(_ blurAmount: Float) -> UIImage {
 		return UIImageEffects.imageByApplyingBlur(
 			to: sourceImage,
@@ -186,7 +186,7 @@ final class ViewController: UIViewController {
 			maskImage: nil
 		)
 	}
-	
+
 	@objc
 	func updateImage() {
 		DispatchQueue.global(qos: .userInteractive).async {
@@ -196,28 +196,28 @@ final class ViewController: UIViewController {
 			}
 		}
 	}
-	
+
 	func updateImageDebounced() {
 		performSelector(inBackground: #selector(updateImage), with: IS_IPAD ? 0.1 : 0.06)
 	}
-	
+
 	func addLongPressGestureToImageView() {
 		let longTapGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPressActionPerformed))
 		imageView.addGestureRecognizer(longTapGesture)
 	}
-	
+
 	func addRightSwipeGestureRecognizer() {
 		let rightSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipActionRecognized))
 		rightSwipeGesture.direction = .right
 		bottomScrollView.addGestureRecognizer(rightSwipeGesture)
 	}
-	
+
 	func addLeftSwipeGestureRecognizer() {
 		let leftSwipeGesture = UISwipeGestureRecognizer(target: self, action: #selector(swipActionRecognized))
 		leftSwipeGesture.direction = .left
 		bottomScrollView.addGestureRecognizer(leftSwipeGesture)
 	}
-	
+
 	@objc
 	func swipActionRecognized(gesture: UISwipeGestureRecognizer) {
 		if gesture.direction == .left {
@@ -243,7 +243,7 @@ final class ViewController: UIViewController {
 			addFiltertoImageView(filterIndex: currentFilterEffectIndex)
 		}
 	}
-	
+
 	func resetSwipe() {
 		filterApplied = false
 		currentFilterEffectIndex = 0
@@ -251,7 +251,7 @@ final class ViewController: UIViewController {
 		sourceImage = originalImage
 		effectTitleLabel.text = Constants.originalImage
 	}
-	
+
 	@objc
 	func longPressActionPerformed(sender: UILongPressGestureRecognizer) {
 		if sender.state == .began {
@@ -260,7 +260,7 @@ final class ViewController: UIViewController {
 			}
 		}
 	}
-	
+
 	func performImageShareAction(shareImage: UIImage) {
 		let itemsToShare = [shareImage]
 		let activityController = UIActivityViewController(activityItems: itemsToShare, applicationActivities: nil)
@@ -269,7 +269,7 @@ final class ViewController: UIViewController {
 			//TODO: Implemet any share completion action here.
 		}
 	}
-	
+
 	@objc
 	func sliderChanged(_ sender: UISlider) {
 		blurAmount = sender.value
@@ -278,20 +278,20 @@ final class ViewController: UIViewController {
 			self.updateImage()
 		}
 	}
-	
+
 	@objc
 	func saveImage(_ button: UIBarButtonItem) {
 		button.isEnabled = false
-		
+
 		PHPhotoLibrary.save(image: imageView.image!, toAlbum: "Blear") { result in
 			button.isEnabled = true
-			
+
 			let HUD = JGProgressHUD(style: .dark)
 			HUD.indicatorView = JGProgressHUDSuccessIndicatorView()
 			HUD.animation = JGProgressHUDFadeZoomAnimation()
 			HUD.vibrancyEnabled = true
 			HUD.contentInsets = UIEdgeInsets(all: 30)
-			
+
 			if case .failure(let error) = result {
 				HUD.indicatorView = JGProgressHUDErrorIndicatorView()
 				HUD.textLabel.text = error.localizedDescription
@@ -299,11 +299,11 @@ final class ViewController: UIViewController {
 				HUD.dismiss(afterDelay: 3)
 				return
 			}
-			
+
 			//HUD.indicatorView = JGProgressHUDImageIndicatorView(image: #imageLiteral(resourceName: "HudSaved"))
 			HUD.show(in: self.view)
 			HUD.dismiss(afterDelay: 0.8)
-			
+
 			// Only on first save
 			if UserDefaults.standard.isFirstLaunch {
 				delay(seconds: 1) {
@@ -318,7 +318,7 @@ final class ViewController: UIViewController {
 			}
 		}
 	}
-	
+
 	/// TODO: Improve this method
 	func changeImage(_ image: UIImage) {
 		let tmp = NSKeyedUnarchiver.unarchiveObject(with: NSKeyedArchiver.archivedData(withRootObject: imageView)) as! UIImageView
@@ -338,7 +338,7 @@ final class ViewController: UIViewController {
 			tmp.removeFromSuperview()
 		})
 	}
-	
+
 	func randomImage() {
 		changeImage(UIImage(contentsOf: randomImageIterator.next()!)!)
 	}
@@ -348,14 +348,14 @@ extension ViewController: UIScrollViewDelegate {
 	func viewForZooming(in scrollView: UIScrollView) -> UIView? {
 		return imageView
 	}
-	
+
 	func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
 		UIView.animate(withDuration: 0.3, animations: { [weak self] in
 			scrollView.zoomScale = Constants.scrollMinimumScale
 			self?.effectTitleLabel.isHidden = false
 		})
 	}
-	
+
 	func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
 		effectTitleLabel.isHidden = true
 	}
