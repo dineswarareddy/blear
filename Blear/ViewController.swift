@@ -453,7 +453,7 @@ extension ViewController: UICollectionViewDelegate {
 
 extension ViewController: UICollectionViewDataSource {
 	func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-		return Constants.CIFilterNames.count - 1
+		return Constants.CIFilterNames.count
 	}
 
 	func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
