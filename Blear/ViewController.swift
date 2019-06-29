@@ -40,7 +40,9 @@ final class ViewController: UIViewController {
 	lazy var randomImageIterator: AnyIterator<URL> = self.stockImages.uniqueRandomElement()
 	var currentFilterEffectIndex = 0
 	var filterApplied = false
+	var isPreviewCollectionViewHidden = true
 	var originalImage: UIImage?
+	var toolbar: UIToolbar?
 
 	lazy var imageView = with(UIImageView()) {
 		$0.image = UIImage(color: .black, size: view.frame.size)
@@ -130,45 +132,49 @@ final class ViewController: UIViewController {
 		view.addSubview(effectTitleLabel)
 
 		let TOOLBAR_HEIGHT: CGFloat = 80 + window.safeAreaInsets.bottom
-		let toolbar = UIToolbar(frame: CGRect(x: 0, y: view.frame.size.height - TOOLBAR_HEIGHT, width: view.frame.size.width, height: TOOLBAR_HEIGHT))
-		toolbar.autoresizingMask = .flexibleWidth
-		toolbar.alpha = 0.6
-		toolbar.tintColor = #colorLiteral(red: 0.98, green: 0.98, blue: 0.98, alpha: 1)
+		toolbar = UIToolbar(frame: CGRect(x: 0, y: view.frame.size.height - TOOLBAR_HEIGHT, width: view.frame.size.width, height: TOOLBAR_HEIGHT))
+		toolbar?.autoresizingMask = .flexibleWidth
+		toolbar?.alpha = 0.6
+		toolbar?.tintColor = #colorLiteral(red: 0.98, green: 0.98, blue: 0.98, alpha: 1)
 
 		// Remove background
-		toolbar.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
-		toolbar.setShadowImage(UIImage(), forToolbarPosition: .any)
+		toolbar?.setBackgroundImage(UIImage(), forToolbarPosition: .any, barMetrics: .default)
+		toolbar?.setShadowImage(UIImage(), forToolbarPosition: .any)
 
 		// Gradient background
 		let GRADIENT_PADDING: CGFloat = 40
 		let gradient = CAGradientLayer()
-		gradient.frame = CGRect(x: 0, y: -GRADIENT_PADDING, width: toolbar.frame.size.width, height: toolbar.frame.size.height + GRADIENT_PADDING)
+		if let toolbar = toolbar {
+			gradient.frame = CGRect(x: 0, y: -GRADIENT_PADDING, width: toolbar.frame.size.width, height: toolbar.frame.size.height + GRADIENT_PADDING)
+		}
 		gradient.colors = [
 			UIColor.clear.cgColor,
 			UIColor.black.withAlphaComponent(0.1).cgColor,
 			UIColor.black.withAlphaComponent(0.3).cgColor,
 			UIColor.black.withAlphaComponent(0.4).cgColor
 		]
-		toolbar.layer.addSublayer(gradient)
+		toolbar?.layer.addSublayer(gradient)
 
-		toolbar.items = [
+		toolbar?.items = [
 			UIBarButtonItem(image: UIImage(named: "PickButton")!, target: self, action: #selector(pickImage), width: 20),
 			.flexibleSpace,
 			UIBarButtonItem(customView: slider),
 			.flexibleSpace,
 			UIBarButtonItem(image: UIImage(named: "SaveButton")!, target: self, action: #selector(saveImage), width: 20)
 		]
-		view.addSubview(toolbar)
+		toolbar.map(view.addSubview)
 
 		// Important that this is here at the end for the fading to work
 		randomImage()
 		addRequiredGestures()
+		setupFilterImagePreviewCollectionView()
 	}
 
 	func addRequiredGestures() {
 		addLongPressGestureToImageView()
 		addRightSwipeGestureRecognizer()
 		addLeftSwipeGestureRecognizer()
+		addDoubleTapToImageView()
 	}
 
 	func addFiltertoImageView(filterIndex: Int) {
@@ -426,7 +432,7 @@ extension ViewController: UIScrollViewDelegate {
 	}
 
 	func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-		UIView.animate(withDuration: 0.3, animations: { [weak self] in
+		UIView.animate(withDuration: Constants.animationDuration, animations: { [weak self] in
 			scrollView.zoomScale = Constants.scrollMinimumScale
 			self?.effectTitleLabel.isHidden = false
 		})
